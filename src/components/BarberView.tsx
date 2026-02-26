@@ -52,7 +52,7 @@ export default function BarberView({ onBackToClient }: { onBackToClient?: () => 
             <h2 className="text-xl font-bold text-amber-500 mb-2">Configuración requerida</h2>
             <p className="text-zinc-300">Debes configurar tu horario de atención antes de comenzar a recibir reservas.</p>
           </div>
-          <BarberConfig />
+          <BarberConfig onSwitchToAgenda={() => setActiveTab('agenda')} />
         </div>
       ) : (
         <>
@@ -92,7 +92,7 @@ export default function BarberView({ onBackToClient }: { onBackToClient?: () => 
           </div>
 
           <main className="max-w-6xl mx-auto p-6">
-            {activeTab === 'agenda' ? <BarberAgenda /> : <BarberConfig />}
+            {activeTab === 'agenda' ? <BarberAgenda /> : <BarberConfig onSwitchToAgenda={() => setActiveTab('agenda')} />}
           </main>
         </>
       )}

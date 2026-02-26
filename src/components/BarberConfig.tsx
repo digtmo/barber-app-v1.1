@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Clock, Calendar, Save, AlertCircle } from 'lucide-react';
+import { Clock, Calendar, Save, AlertCircle, CheckCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import Modal from './Modal';
+import Spinner from './Spinner';
 
-export default function BarberConfig() {
+export default function BarberConfig({ onSwitchToAgenda }: { onSwitchToAgenda?: () => void }) {
   const { barberConfig, updateBarberConfig } = useApp();
   const [config, setConfig] = useState({
     startTime: barberConfig.startTime,
@@ -11,6 +13,8 @@ export default function BarberConfig() {
     workingDays: barberConfig.workingDays,
   });
   const [message, setMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     setConfig({
@@ -40,7 +44,7 @@ export default function BarberConfig() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (config.workingDays.length === 0) {
@@ -58,9 +62,19 @@ export default function BarberConfig() {
       return;
     }
 
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 800));
+
     updateBarberConfig(config);
-    setMessage('Configuración guardada exitosamente');
-    setTimeout(() => setMessage(null), 3000);
+    setIsLoading(false);
+    setShowSuccessModal(true);
+  };
+
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
+    setTimeout(() => {
+      onSwitchToAgenda?.();
+    }, 200);
   };
 
   return (
@@ -78,8 +92,8 @@ export default function BarberConfig() {
       )}
 
       {message && (
-        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-6">
-          <p className="text-green-400">{message}</p>
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
+          <p className="text-red-400">{message}</p>
         </div>
       )}
 
@@ -170,12 +184,42 @@ export default function BarberConfig() {
 
         <button
           type="submit"
-          className="w-full py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2"
+          disabled={isLoading}
+          className="w-full py-4 bg-amber-600 hover:bg-amber-500 disabled:bg-amber-600/50 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2"
         >
-          <Save className="w-5 h-5" />
-          Guardar configuración
+          {isLoading ? (
+            <>
+              <Spinner size="sm" />
+              Guardando...
+            </>
+          ) : (
+            <>
+              <Save className="w-5 h-5" />
+              Guardar configuración
+            </>
+          )}
         </button>
       </form>
+
+      <Modal isOpen={showSuccessModal} onClose={handleCloseSuccessModal}>
+        <div className="text-center">
+          <div className="flex items-center justify-center w-16 h-16 bg-green-500/10 rounded-full mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-green-500" />
+          </div>
+          <h3 className="text-2xl font-bold text-white mb-2">
+            Configuración guardada
+          </h3>
+          <p className="text-zinc-400 mb-6">
+            Tu horario de atención ha sido actualizado exitosamente
+          </p>
+          <button
+            onClick={handleCloseSuccessModal}
+            className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition-colors"
+          >
+            Ir a mi agenda
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
