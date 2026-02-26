@@ -9,6 +9,15 @@ export default function BarberView({ onBackToClient }: { onBackToClient?: () => 
   const [activeTab, setActiveTab] = useState<'agenda' | 'config'>(
     barberConfig.isConfigured ? 'agenda' : 'config'
   );
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handleTabChange = (tab: 'agenda' | 'config') => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setActiveTab(tab);
+      setIsTransitioning(false);
+    }, 150);
+  };
 
   const handleLogout = () => {
     logoutBarber();
@@ -60,7 +69,7 @@ export default function BarberView({ onBackToClient }: { onBackToClient?: () => 
             <div className="max-w-6xl mx-auto px-6">
               <div className="flex gap-4">
                 <button
-                  onClick={() => setActiveTab('agenda')}
+                  onClick={() => handleTabChange('agenda')}
                   className={`flex items-center gap-2 px-6 py-4 font-semibold transition-colors relative ${
                     activeTab === 'agenda'
                       ? 'text-amber-500'
@@ -74,7 +83,7 @@ export default function BarberView({ onBackToClient }: { onBackToClient?: () => 
                   )}
                 </button>
                 <button
-                  onClick={() => setActiveTab('config')}
+                  onClick={() => handleTabChange('config')}
                   className={`flex items-center gap-2 px-6 py-4 font-semibold transition-colors relative ${
                     activeTab === 'config'
                       ? 'text-amber-500'
@@ -92,7 +101,9 @@ export default function BarberView({ onBackToClient }: { onBackToClient?: () => 
           </div>
 
           <main className="max-w-6xl mx-auto p-6">
-            {activeTab === 'agenda' ? <BarberAgenda /> : <BarberConfig onSwitchToAgenda={() => setActiveTab('agenda')} />}
+            <div className={isTransitioning ? 'slide-out-right' : 'slide-in-left'}>
+              {activeTab === 'agenda' ? <BarberAgenda /> : <BarberConfig onSwitchToAgenda={() => handleTabChange('agenda')} />}
+            </div>
           </main>
         </>
       )}

@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { Lock, AlertCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import Spinner from './Spinner';
 
 export default function BarberLogin({ onBackToClient }: { onBackToClient?: () => void }) {
   const { authenticateBarber } = useApp();
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 800));
+
     const success = authenticateBarber(password);
 
+    setIsLoading(false);
     if (!success) {
       setError(true);
       setPassword('');
@@ -59,9 +65,17 @@ export default function BarberLogin({ onBackToClient }: { onBackToClient?: () =>
 
             <button
               type="submit"
-              className="w-full py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg transition-colors shadow-lg shadow-amber-600/20"
+              disabled={isLoading}
+              className="w-full py-4 bg-amber-600 hover:bg-amber-500 disabled:bg-amber-600/50 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-colors shadow-lg shadow-amber-600/20 flex items-center justify-center gap-2"
             >
-              Ingresar
+              {isLoading ? (
+                <>
+                  <Spinner size="sm" />
+                  Verificando...
+                </>
+              ) : (
+                'Ingresar'
+              )}
             </button>
           </form>
         </div>
